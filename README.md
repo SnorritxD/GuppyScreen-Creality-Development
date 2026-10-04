@@ -7,6 +7,36 @@ This repository is intended for developers, testers, researchers, and contributo
 > **This is a development repository.**
 >
 > It is **not** a universal installer and it is **not** a ready-to-use release for every Creality printer.
+>
+> **Important:** This repository is intended to be cloned and developed on a **development PC**, not directly on the Creality printer. The printer is the **target test device**, not the development environment.
+
+---
+
+## Development PC vs. Target Printer
+
+This repository should be cloned to your **development computer**.
+
+**Do not clone this repository directly onto the Creality printer.**
+
+The normal workflow is:
+
+    Development PC
+        |
+        +-- Clone repository
+        |
+        +-- Modify source code
+        |
+        +-- Build / cross-compile
+        |
+        +-- Test the resulting build
+        |
+        +-- Copy the required test files to the printer
+        |
+        +-- Test on the real hardware
+
+The Creality printer is used as the **target device for testing**. Source code, build tools, submodules, and the normal development workflow belong on the development PC.
+
+The exact way a development binary or other test files are transferred to the printer depends on the printer and firmware.
 
 ---
 
@@ -384,12 +414,14 @@ If testing another LVGL version, document:
 
 ## Building GuppyScreen
 
-Clone the repository with:
+### Clone on the Development PC
+
+Run the following commands on your **development PC**, not on the Creality printer:
 
     git clone --recursive https://github.com/SnorritxD/GuppyScreen-Creality-Development.git
     cd GuppyScreen-Creality-Development
 
-If the repository was cloned without `--recursive`, initialize the submodules with:
+If the repository was cloned without `--recursive`, initialize the submodules on the development PC with:
 
     git submodule update --init --recursive
 
@@ -397,7 +429,9 @@ The exact build requirements and development environment are documented in `DEVE
 
 Always read `DEVELOPMENT.md` before changing the build environment.
 
-The normal development build is performed using the project's `Makefile`.
+The normal development build is performed on the development PC using the project's `Makefile`.
+
+After a successful build, the resulting development binary can be transferred to the target printer for hardware testing. Do not treat the printer itself as the normal build environment.
 
 ---
 
@@ -427,7 +461,9 @@ A binary can successfully compile while still being completely incompatible with
 
 ## Testing on a Printer
 
-A development binary should be tested on the actual target hardware.
+A development binary should be built on the **development PC** and then tested on the actual target hardware.
+
+The printer is a **test target**, not the normal place to clone the repository or perform the full development build.
 
 Before testing:
 
