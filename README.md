@@ -1,877 +1,1224 @@
-# GuppyScreen – Creality Development
+# GuppyScreen Creality Development
 
-Community development environment for adapting GuppyScreen to Creality 3D printers.
+A community development and research repository for adapting, building, testing, and investigating **GuppyScreen** on Creality 3D printers.
 
-This repository is intended for developers, testers, researchers, and contributors who want to investigate, port, adapt, build, test, and improve GuppyScreen support for Creality printers and hardware platforms.
+This repository is intended as a development environment for researching printer-specific hardware, firmware, display systems, touchscreen input, Linux environments, CPU architectures, toolchains, and GuppyScreen compatibility.
 
-> **This is a development repository.**
->
-> It is **not** a universal installer and it is **not** a ready-to-use release for every Creality printer.
->
-> **Important:** This repository is intended to be cloned and developed on a **development PC**, not directly on the Creality printer. The printer is the **target test device**, not the development environment.
+It is **not limited to one printer model**.
 
 ---
 
-## Development PC vs. Target Printer
+## Important: Development PC vs. Printer
 
-This repository should be cloned to your **development computer**.
+This repository is developed on a **development PC**.
 
-**Do not clone this repository directly onto the Creality printer.**
+The repository should be cloned, modified, built, and committed on your development computer.
 
-The normal workflow is:
+The printer is the **target device used for hardware investigation and testing**.
 
-    Development PC
-        |
-        +-- Clone repository
-        |
-        +-- Modify source code
-        |
-        +-- Build / cross-compile
-        |
-        +-- Test the resulting build
-        |
-        +-- Copy the required test files to the printer
-        |
-        +-- Test on the real hardware
+Do **not** clone this repository directly onto the printer as your normal development workflow.
 
-The Creality printer is used as the **target device for testing**. Source code, build tools, submodules, and the normal development workflow belong on the development PC.
+Typical workflow:
 
-The exact way a development binary or other test files are transferred to the printer depends on the printer and firmware.
+```text
+Development PC
+      │
+      ├── Clone repository
+      ├── Modify source
+      ├── Build
+      ├── Inspect binaries
+      └── Commit / push changes
+             │
+             ▼
+       Transfer test build
+             │
+             ▼
+       Creality printer
+             │
+             ├── Run test
+             ├── Inspect hardware
+             ├── Inspect firmware
+             └── Collect diagnostic information
+```
 
----
-
-## About This Repository
-
-This repository provides a complete development environment for working on GuppyScreen with Creality hardware.
-
-The goal is to provide the community with a common place where developers can:
-
-- study the existing GuppyScreen implementation;
-- build GuppyScreen from source;
-- investigate Creality printer hardware;
-- adapt GuppyScreen to different display systems;
-- adapt touchscreen input;
-- investigate framebuffer behavior;
-- work with different SoCs and CPU architectures;
-- test different LVGL versions and configurations;
-- develop printer-specific changes;
-- share patches and fixes;
-- reproduce problems;
-- document hardware discoveries;
-- collaborate on support for additional Creality printers.
-
-The repository intentionally contains the source code and development dependencies required to continue development.
-
-Because of this, the repository is expected to be considerably larger than a normal end-user installation package.
+The exact build and deployment process may differ between printer models.
 
 ---
 
-## What Is GuppyScreen?
+# Project Purpose
 
-GuppyScreen is a lightweight touchscreen interface for Klipper/Moonraker-based 3D printers.
+GuppyScreen is an alternative touchscreen interface originally developed for compatible 3D printers.
 
-It uses **LVGL (Light and Versatile Graphics Library)** for the graphical user interface and communicates with the printer software environment to display and control printer functions.
+This repository exists to investigate what is required to make GuppyScreen work on additional Creality printer platforms.
 
-GuppyScreen can be adapted to different hardware environments, but the hardware interface is not identical between Creality printer models.
+Different Creality printers can use significantly different:
 
-Different models may use different:
+* CPUs
+* CPU architectures
+* CPU instruction sets
+* endianness
+* ABIs
+* C libraries
+* dynamic loaders
+* Linux kernels
+* framebuffer devices
+* framebuffer layouts
+* touchscreen devices
+* display drivers
+* display services
+* firmware versions
+* system applications
+* power-management behavior
+* filesystem layouts
+* build environments
 
-- SoCs;
-- CPU architectures;
-- Linux kernels;
-- framebuffer devices;
-- framebuffer layouts;
-- display controllers;
-- touchscreen controllers;
-- input event devices;
-- kernel drivers;
-- GUI services;
-- system startup mechanisms;
-- filesystem layouts;
-- firmware versions.
+Because of these differences, support for one printer **does not automatically mean support for another printer**.
 
-Because of this:
-
-> **Support for one Creality printer does not automatically mean support for another printer.**
-
----
-
-## Purpose of This Repository
-
-The primary purpose of this repository is to provide a common development base for bringing GuppyScreen to additional Creality printers and hardware platforms.
-
-This repository is intended for research, development, experimentation, testing, and collaboration.
-
-A developer working on another Creality printer may need to determine:
-
-- which framebuffer is used by the display;
-- which framebuffer format is used;
-- the real display resolution;
-- whether a virtual framebuffer height is used;
-- which input event device belongs to the touchscreen;
-- which touchscreen driver is loaded;
-- which GUI process currently owns the display;
-- which service starts the stock GUI;
-- which CPU architecture is being used;
-- which dynamic loader is available;
-- which kernel drivers are involved;
-- how the display behaves after suspend and resume.
-
-These questions should be answered for the target printer before reliable support is developed.
+The purpose of this repository is therefore to document and verify those differences instead of assuming that hardware is compatible.
 
 ---
 
-## What You Can Do Here
+# Project Philosophy
 
-This repository can be used for many different development tasks.
+The project follows an **evidence-first development approach**.
 
-### Build GuppyScreen
+The general process is:
 
-Developers can build GuppyScreen from source using the included development environment.
+```text
+Inspect
+   ↓
+Measure
+   ↓
+Understand
+   ↓
+Form a hypothesis
+   ↓
+Test
+   ↓
+Document the result
+   ↓
+Modify the source when justified
+```
 
-This is useful for:
+Changes should be based on information obtained from:
 
-- testing source changes;
-- testing LVGL changes;
-- testing display changes;
-- testing touchscreen changes;
-- testing networking changes;
-- testing UI changes;
-- producing development binaries.
+* the printer
+* its firmware
+* existing binaries
+* kernel information
+* sysfs
+* device nodes
+* framebuffer information
+* input devices
+* executable headers
+* libraries
+* configuration files
+* controlled experiments
 
-### Port GuppyScreen to Another Printer
+Avoid making hardware-specific changes simply because they work on another printer.
 
-A major purpose of this repository is supporting additional Creality printers.
+---
 
-A developer can investigate a new printer and create the required hardware-specific changes.
+# Current Development Baseline
 
-Examples include:
+The current development baseline uses the original GuppyScreen architecture based on:
 
-- framebuffer selection;
-- touchscreen input selection;
-- display initialization;
-- framebuffer synchronization;
-- framebuffer panning;
-- input handling;
-- architecture-specific build configuration;
-- startup behavior;
-- system integration.
+**LVGL 8.3**
 
-### Investigate Printer Hardware
+The repository currently uses the original GuppyScreen source structure rather than attempting to migrate the project to LVGL 9.
 
-The repository can be used together with shell tools and a target printer to investigate the hardware environment.
+This is intentional.
+
+A migration to another LVGL major version changes a large number of APIs and can introduce problems that are unrelated to printer hardware compatibility.
+
+Therefore, hardware compatibility work should first be established against the original LVGL 8.3 baseline.
+
+Future LVGL upgrades may be investigated separately once the hardware-specific implementation is understood.
+
+---
+
+# Supported Development Platforms
+
+Development can be performed on:
+
+* Linux
+* Windows using WSL2
+* macOS
+
+The exact commands may differ between operating systems.
+
+Linux is generally the most convenient environment for cross-compilation and embedded Linux development, but the project should not require every contributor to use the same desktop operating system.
+
+---
+
+# Repository Scope
+
+This repository is intended to support work such as:
+
+* GuppyScreen development
+* printer hardware research
+* firmware research
+* CPU architecture investigation
+* cross-compilation research
+* framebuffer investigation
+* touchscreen investigation
+* display-system investigation
+* Linux target debugging
+* LVGL development
+* build-system development
+* printer-specific compatibility work
+* documentation
+* reproducible testing
+* community contributions
+
+The repository should remain useful even when a particular printer has not yet been fully supported.
+
+---
+
+# Printer Compatibility
+
+Printer compatibility must be determined experimentally.
+
+A printer should not be considered supported simply because it:
+
+* uses the same manufacturer
+* has a similar screen
+* uses a similar CPU
+* has the same advertised resolution
+* uses the same firmware family
+* uses the same Linux kernel version
+* uses another printer's GuppyScreen binary successfully
+
+These similarities can be useful clues, but they do not prove binary or hardware compatibility.
+
+---
+
+# Hardware Investigation
+
+Before modifying GuppyScreen for a new printer, investigate the target hardware.
 
 Useful information includes:
 
-- CPU and SoC information;
-- Linux kernel information;
-- CPU architecture;
-- framebuffer devices;
-- framebuffer resolution;
-- framebuffer virtual resolution;
-- bits per pixel;
-- framebuffer stride;
-- touchscreen devices;
-- input event devices;
-- touchscreen drivers;
-- running GUI processes;
-- startup services;
-- filesystem layout.
+```bash
+uname -a
+uname -m
+cat /proc/cpuinfo
+```
 
-The exact commands available depend on the firmware installed on the target printer.
+Also inspect relevant system information such as:
 
-### Develop Diagnostics
+```bash
+ls -l /dev/fb*
+ls -l /dev/input/
+```
 
-The repository can also be used to develop diagnostic tools that help determine how a particular Creality printer works.
+and, where available:
 
-Examples include:
+```bash
+ls /sys/class/graphics/
+ls /sys/class/input/
+```
 
-- framebuffer diagnostics;
-- display diagnostics;
-- input diagnostics;
-- hardware identification;
-- runtime testing;
-- compatibility testing.
+The exact commands available may differ between printer firmware versions.
 
 ---
 
-## What This Repository Is Not
+# CPU Architecture
 
-This repository is not:
+The target CPU architecture must be determined from the printer itself.
 
-- a universal GuppyScreen installer;
-- a universal Creality firmware package;
-- a guaranteed working build for every Creality printer;
-- a replacement for the printer firmware;
-- a replacement for the printer operating system;
-- a guarantee that a binary built here will run on a particular printer;
-- a reason to overwrite system files without investigation.
+Do not assume that all Creality printers use the same architecture.
 
-Do not assume that a binary working on one printer can simply be copied to another printer.
+Useful information includes:
 
----
+```bash
+uname -m
+cat /proc/cpuinfo
+```
 
-## Repository Structure
+Existing executable files should also be inspected.
 
-The repository contains the development source and supporting components.
+For example:
 
-- `README.md` — project overview and development guidance.
-- `DEVELOPMENT.md` — development environment and build information.
-- `Makefile` — project build system.
-- `VERSION` — project version information.
-- `src/` — main GuppyScreen application source.
-- `lvgl/` — LVGL source.
-- `lv_drivers/` — LVGL hardware drivers.
-- `lv_touch_calibration/` — touchscreen calibration support.
-- `libhv/` — networking and system-related library.
-- `spdlog/` — logging library.
-- `wpa_supplicant/` — wireless/networking development component.
-- `assets/` — graphical assets.
-- `themes/` — UI themes.
-- `patches/` — development and hardware-specific patches.
-- `fbinfo` — framebuffer diagnostic utility.
-- `fbinfo.c` — framebuffer diagnostic utility source.
-- `guppyscreen` — known-good reference binary.
-- `build/` — normal development build output.
-- `lv_conf.h` — LVGL configuration.
-- `lv_drv_conf.h` — LVGL driver configuration.
+```bash
+file <binary>
+```
 
-The exact contents may evolve as development continues.
+and:
+
+```bash
+readelf -h <binary>
+```
+
+can provide information about:
+
+* architecture
+* ELF class
+* endianness
+* ABI
+* instruction set
+* executable type
+
+A CPU family name alone is not enough to select a working cross-compiler.
+
+For example, a printer may use a MIPS-based CPU, but the exact architecture, endianness, ABI, instruction-set requirements, C library, and dynamic loader must still be verified on the target device.
 
 ---
 
-## Development Philosophy
+# Cross-Compilation
 
-The most important rule for Creality development is:
+Cross-compilation is required when the development PC and printer use different CPU architectures.
 
-> **Do not assume that different printers use the same hardware configuration.**
+A suitable toolchain must match the target environment.
 
-Even when two printers appear to use the same display size or similar firmware, their internal implementation may differ.
+Important properties include:
 
-Always investigate the target hardware first.
+* CPU architecture
+* endianness
+* ABI
+* instruction set
+* floating-point ABI
+* C library
+* dynamic loader
+* compiler compatibility
+* linker compatibility
+* required runtime libraries
 
-For example, one printer may use one framebuffer and touchscreen event device while another printer may use completely different devices.
+Do not select a toolchain based only on a CPU name.
 
-A hardcoded configuration that works on one printer may completely fail on another printer.
-
-Hardware-specific configuration should therefore be identified, tested, and documented rather than blindly copied.
-
----
-
-## Printer Support
-
-Support should be considered **printer-specific unless proven otherwise**.
-
-A new printer should not be marked as supported simply because:
-
-- GuppyScreen starts;
-- the screen lights up;
-- the UI appears;
-- touch appears to work.
-
-Proper support should also consider:
-
-- display stability;
-- framebuffer behavior;
-- touch reliability;
-- startup;
-- shutdown;
-- reboot;
-- application restart;
-- sleep and wake;
-- printer communication;
-- firmware compatibility;
-- resource usage;
-- long-running operation.
+A compiler that produces a valid ELF executable can still produce a binary that cannot run on the printer.
 
 ---
 
-## Hardware Investigation
+# Target Executable Investigation
 
-Before attempting to port GuppyScreen to a new printer, create a hardware profile.
+Existing printer binaries are valuable sources of information.
 
-At minimum, document:
+Before attempting to reproduce a binary, inspect known target executables.
 
-- printer model;
-- firmware version;
-- SoC;
-- CPU architecture;
-- endianess;
-- ABI;
-- Linux kernel version;
-- framebuffer device;
-- framebuffer driver;
-- display resolution;
-- virtual framebuffer resolution;
-- bits per pixel;
-- stride;
-- touchscreen device;
-- touchscreen driver;
-- stock GUI process;
-- stock GUI service;
-- dynamic loader.
+Useful commands include:
 
-Do not assume that `/dev/fb0` is the display.
+```bash
+file <binary>
+```
 
-Do not assume that `/dev/input/event0` is the touchscreen.
+```bash
+readelf -h <binary>
+```
 
-Both must be verified on the target printer.
+```bash
+readelf -l <binary>
+```
 
----
+```bash
+readelf -d <binary>
+```
 
-## Framebuffer and Display Development
+```bash
+strings <binary>
+```
 
-Framebuffer behavior is one of the most important areas when porting GuppyScreen to Creality hardware.
+and, when useful:
 
-Do not assume that the framebuffer is simply a linear display surface.
+```bash
+objdump -f <binary>
+```
 
-Some devices may use:
+These can reveal information about:
 
-- double buffering;
-- virtual framebuffer heights;
-- framebuffer panning;
-- multiple layers;
-- hardware composition;
-- custom framebuffer drivers;
-- display synchronization;
-- vendor-specific IOCTL behavior.
+* ELF format
+* architecture
+* endianness
+* ABI
+* interpreter
+* shared-library dependencies
+* compiler-related information
+* embedded paths
+* symbols
+* strings
+* build information
 
-For example, a framebuffer may report a physical display resolution of 800 × 480 while using a virtual framebuffer resolution of 800 × 960.
-
-This can indicate that multiple framebuffer pages are available.
-
-Changes involving framebuffer operations such as:
-
-- `FBIOGET_VSCREENINFO`;
-- `FBIOPUT_VSCREENINFO`;
-- `FBIOPAN_DISPLAY`;
-- `yoffset`;
-- `virtual_yres`;
-- `stride`;
-- `bits_per_pixel`;
-
-must be tested carefully on the target hardware.
+A working stock executable can be especially useful as a reference when investigating compatibility.
 
 ---
 
-## Touchscreen Development
+# Dynamic Loader
 
-Touchscreen handling is equally hardware-specific.
+The target dynamic loader must be investigated before relying on dynamically linked test binaries.
 
-Different Creality printers may use different:
+For example:
 
-- touchscreen controllers;
-- Linux input drivers;
-- `/dev/input/eventX` devices;
-- coordinate systems;
-- calibration requirements;
-- suspend/resume behavior.
+```bash
+ls -l /lib/ld*
+```
 
-A touchscreen working during normal operation does not automatically mean that it is correct after:
+and:
 
-- reboot;
-- application restart;
-- sleep;
-- wake;
-- firmware restart.
+```bash
+readelf -l <binary>
+```
 
-These scenarios should be tested when adding support.
+The ELF `INTERP` entry can identify the loader expected by an executable.
 
----
+A binary requiring a loader that does not exist on the printer will not run normally.
 
-## LVGL Development
-
-GuppyScreen uses LVGL as its graphical framework.
-
-This repository provides the development environment around the LVGL version currently used by the source tree.
-
-When changing LVGL versions, do not assume that a newer version is a drop-in replacement.
-
-Major LVGL changes can affect:
-
-- object APIs;
-- display APIs;
-- input APIs;
-- rendering;
-- drivers;
-- event handling;
-- timers;
-- memory management;
-- framebuffer integration.
-
-If testing another LVGL version, document:
-
-1. which version was tested;
-2. which source changes were required;
-3. which drivers were changed;
-4. whether the application built;
-5. whether it started;
-6. whether display output worked;
-7. whether touch worked;
-8. whether long-term operation worked.
+Likewise, a binary can fail because its ABI, libraries, or libc version are incompatible even when the CPU architecture appears correct.
 
 ---
 
-## Building GuppyScreen
+# Framebuffer Investigation
 
-### Clone on the Development PC
+GuppyScreen communicates with the display through the Linux graphics system used by the target printer.
 
-Run the following commands on your **development PC**, not on the Creality printer:
+Do not assume that every printer uses:
 
-    git clone --recursive https://github.com/SnorritxD/GuppyScreen-Creality-Development.git
-    cd GuppyScreen-Creality-Development
+```text
+/dev/fb0
+```
 
-If the repository was cloned without `--recursive`, initialize the submodules on the development PC with:
+The correct framebuffer device must be determined from the target printer.
 
-    git submodule update --init --recursive
+Useful commands include:
 
-The exact build requirements and development environment are documented in `DEVELOPMENT.md`.
+```bash
+ls -l /dev/fb*
+```
 
-Always read `DEVELOPMENT.md` before changing the build environment.
+and:
 
-The normal development build is performed on the development PC using the project's `Makefile`.
+```bash
+cat /sys/class/graphics/fb0/name
+```
 
-After a successful build, the resulting development binary can be transferred to the target printer for hardware testing. Do not treat the printer itself as the normal build environment.
+For additional framebuffer devices:
 
----
+```bash
+cat /sys/class/graphics/fb1/name
+```
 
-## Build Environment
+Other useful information may include:
 
-The project may require a cross-compilation toolchain when building for Creality printer hardware.
+```bash
+cat /sys/class/graphics/fb1/virtual_size
+cat /sys/class/graphics/fb1/bits_per_pixel
+cat /sys/class/graphics/fb1/stride
+cat /sys/class/graphics/fb1/modes
+cat /sys/class/graphics/fb1/state
+```
 
-The correct compiler depends on the architecture of the target printer.
-
-For example, the Creality K1C 2025/2026 development environment uses a MIPS little-endian target.
-
-Do not select a compiler based only on the word "MIPS".
-
-The following properties matter:
-
-- architecture;
-- endianess;
-- ABI;
-- CPU instruction set;
-- floating-point ABI;
-- dynamic loader;
-- libc compatibility.
-
-A binary can successfully compile while still being completely incompatible with the target printer.
+The exact framebuffer number and available sysfs attributes depend on the printer.
 
 ---
 
-## Testing on a Printer
+# Visible Resolution vs. Virtual Resolution
 
-A development binary should be built on the **development PC** and then tested on the actual target hardware.
+A framebuffer's visible display resolution does not necessarily equal its virtual framebuffer size.
 
-The printer is a **test target**, not the normal place to clone the repository or perform the full development build.
+For example, a framebuffer may expose a visible mode such as:
 
-Before testing:
+```text
+800x480
+```
 
-1. Identify the printer model.
-2. Record the firmware version.
-3. Record the CPU architecture.
-4. Record the framebuffer configuration.
-5. Record the touchscreen configuration.
-6. Record the stock GUI process and service.
-7. Make a backup of anything that may be changed.
-8. Keep a known-good recovery method available.
+while having a virtual framebuffer height of:
 
-Never assume that a development binary is safe simply because it builds successfully.
+```text
+960
+```
 
----
+This can indicate that multiple framebuffer areas are available vertically.
 
-## Local and Simulator Development
+This distinction is important when investigating:
 
-Local development and simulation can be used for UI and application development where possible.
+* double buffering
+* framebuffer panning
+* page flipping
+* display synchronization
+* framebuffer memory layout
 
-This is useful for:
-
-- UI changes;
-- layout changes;
-- themes;
-- application logic;
-- debugging source code.
-
-However, local simulation does not reproduce every hardware-specific behavior.
-
-It may not reproduce:
-
-- Creality framebuffer drivers;
-- hardware framebuffer synchronization;
-- touchscreen drivers;
-- vendor-specific display layers;
-- suspend/resume behavior;
-- target CPU architecture;
-- target Linux kernel behavior.
-
-Hardware testing remains necessary for hardware-specific changes.
+Therefore, both the visible mode and virtual framebuffer dimensions should be investigated.
 
 ---
 
-## Configuration
+# Framebuffer Panning
 
-Runtime configuration such as `guppyconfig.json` may be generated or maintained outside the source tree depending on the target installation.
+Some target systems use framebuffer panning to switch between framebuffer areas.
 
-Do not commit:
+Linux framebuffer interfaces can expose information such as:
 
-- personal runtime configuration;
-- credentials;
-- passwords;
-- API keys;
-- private network information;
-- machine-specific secrets.
+```text
+xoffset
+yoffset
+xres
+yres
+xres_virtual
+yres_virtual
+```
 
-Development configuration and production runtime configuration should remain separate.
+Applications may use framebuffer ioctls such as:
 
----
+```text
+FBIOGET_VSCREENINFO
+FBIOPAN_DISPLAY
+```
 
-## Important Safety Notes
+when implementing this behavior.
 
-This repository is intended for development.
+The exact behavior must be confirmed on the target printer.
 
-When working directly on a Creality printer:
-
-### Always Keep a Recovery Path
-
-Before modifying system files:
-
-- make backups;
-- record the original state;
-- understand how to restore it;
-- avoid deleting original firmware files;
-- avoid overwriting files unnecessarily.
-
-### Never Blindly Disable the Stock GUI
-
-A printer may depend on vendor startup services for:
-
-- display initialization;
-- touchscreen initialization;
-- hardware services;
-- printer control;
-- system integration.
-
-If a stock service must be disabled during testing, document exactly what was changed and how to restore it.
-
-### Never Assume a Binary Is Compatible
-
-A binary compiled for one architecture or ABI may not run on another.
-
-### Do Not Start With Destructive Changes
-
-Start with:
-
-- diagnostics;
-- read-only inspection;
-- backups;
-- isolated tests.
+Do not assume that a virtual framebuffer automatically means that panning or double buffering works in the same way on another printer.
 
 ---
 
-## Known-Good Reference Binary
+# Touchscreen Investigation
 
-The root-level `guppyscreen` file is retained as a known-good development reference.
+The touchscreen input device must also be determined from the target printer.
 
-It is **not normal build output**.
+Do not assume that the touchscreen is always:
 
-Normal development output belongs under `build/`.
+```text
+/dev/input/event0
+```
 
-The reference binary exists so developers can:
+Investigate available input devices with:
 
-- compare behavior;
-- compare file hashes;
-- verify whether a new build differs;
-- test regressions;
-- preserve a known working point.
+```bash
+ls -l /dev/input/
+```
 
-Do not replace the reference binary merely because a new build was created.
+and, where available:
 
-If the reference binary is intentionally replaced, document why.
+```bash
+cat /proc/bus/input/devices
+```
 
----
+The correct event device should be identified from the target hardware.
 
-## Working With a New Creality Printer
+Useful information can include:
 
-When starting support for a new printer, do not immediately start changing GuppyScreen source code.
-
-First create a hardware profile.
-
-Document:
-
-- Printer:
-- Firmware:
-- SoC:
-- Architecture:
-- Kernel:
-- Framebuffer:
-- Framebuffer driver:
-- Resolution:
-- Virtual resolution:
-- Bits per pixel:
-- Stride:
-- Touch device:
-- Touch driver:
-- Stock GUI:
-- GUI service:
-- Dynamic loader:
-
-Then investigate the existing system.
+* device name
+* event number
+* input capabilities
+* absolute coordinates
+* multitouch information
+* resolution
+* axis ranges
 
 ---
 
-## Recommended Development Workflow
+# Display Sleep and Wake
 
-### Step 1 — Identify the Hardware
+Display problems after idle, sleep, wake, or screen-off events must be investigated separately from normal rendering.
 
-Collect CPU, kernel, framebuffer, input, and GUI information.
+A display that works correctly immediately after startup may behave differently after:
 
-### Step 2 — Preserve the Original System
+* screen timeout
+* display sleep
+* system idle
+* wake-up
+* firmware UI transitions
+* switching between applications
+* restarting the display service
 
-Create backups before changing anything.
+Do not automatically assume that a wake-up problem is an LVGL problem.
 
-### Step 3 — Determine Display Ownership
+Investigate:
 
-Find out which process currently uses the framebuffer.
+* framebuffer state
+* framebuffer memory
+* display service behavior
+* display power state
+* firmware services
+* kernel messages
+* stock GUI behavior
 
-### Step 4 — Determine Touchscreen Ownership
-
-Identify the correct `/dev/input/eventX` device and driver.
-
-### Step 5 — Build Diagnostic Tools
-
-Use tools such as `fbinfo` to verify the framebuffer before involving the complete GUI.
-
-### Step 6 — Build GuppyScreen
-
-Compile using the correct target toolchain.
-
-### Step 7 — Test Display Output
-
-Verify:
-
-- correct framebuffer;
-- correct resolution;
-- correct pixel format;
-- correct orientation;
-- no corruption.
-
-### Step 8 — Test Touch
-
-Verify:
-
-- coordinate mapping;
-- calibration;
-- gestures;
-- repeated input;
-- restart behavior.
-
-### Step 9 — Test System Integration
-
-Test:
-
-- startup;
-- application restart;
-- reboot;
-- sleep;
-- wake;
-- printer communication.
-
-### Step 10 — Document Everything
-
-Record the hardware configuration and all changes required.
-
-This documentation is extremely valuable for the next contributor working on the same printer.
+before changing GuppyScreen rendering code.
 
 ---
 
-## Contributing
+# Firmware Research
+
+Firmware versions can change system behavior even when the printer hardware remains physically identical.
+
+Firmware comparisons may include:
+
+* kernel versions
+* system binaries
+* display services
+* libraries
+* configuration files
+* startup scripts
+* permissions
+* device nodes
+* framebuffer behavior
+* touchscreen behavior
+* power-management behavior
+
+When comparing firmware versions, record the exact firmware version being tested.
+
+Do not assume that behavior observed on one firmware version applies to another.
+
+---
+
+# Stock Creality Software
+
+Stock Creality software can provide valuable information about how the printer's display system works.
+
+Depending on the printer, relevant components may include:
+
+* GUI applications
+* display services
+* framebuffer utilities
+* touchscreen services
+* startup services
+* helper binaries
+* libraries
+* configuration files
+
+Existing binaries can be inspected to determine how the stock system interacts with the hardware.
+
+However, stock system files should **not** be modified blindly.
+
+Always preserve original files and have a recovery procedure before testing changes on the printer.
+
+---
+
+# Safety and Recovery
+
+Testing software directly on an embedded printer can cause:
+
+* a frozen display
+* an unusable GUI
+* a failed application
+* loss of touchscreen input
+* unexpected system behavior
+
+Therefore:
+
+1. Keep backups of original files.
+2. Test one change at a time where possible.
+3. Keep a known-working recovery method.
+4. Avoid overwriting stock binaries unnecessarily.
+5. Prefer temporary test files when possible.
+6. Record exactly what was changed.
+7. Record the firmware version.
+8. Record the result of every test.
+
+Never assume that a binary is safe simply because it compiled successfully.
+
+---
+
+# Local Development
+
+Whenever possible, development should first be performed on the development PC.
+
+Useful development approaches include:
+
+* compiling the project locally
+* testing non-hardware-dependent code
+* testing LVGL behavior
+* checking build errors
+* using a simulator where practical
+* inspecting generated binaries
+* running static analysis
+* checking compiler warnings
+
+Hardware-specific behavior must eventually be tested on the actual target printer.
+
+A PC build that works correctly does not prove that the target binary will work on the printer.
+
+---
+
+# Build Environment
+
+The project may require additional libraries and tools depending on the selected build configuration.
+
+The exact toolchain should be documented when a target platform becomes reproducible.
+
+Important build information includes:
+
+* host operating system
+* compiler
+* compiler version
+* linker
+* binutils version
+* target architecture
+* target ABI
+* C library
+* library versions
+* build flags
+* linker flags
+* firmware version
+
+This information should be recorded when a working target build is discovered.
+
+---
+
+# Repository Structure
+
+The repository contains the GuppyScreen source and supporting development material.
+
+Typical project components include:
+
+```text
+GuppyScreen-Creality-Development/
+├── README.md
+├── DEVELOPMENT.md
+├── Makefile
+├── guppyscreen
+├── lvgl/
+├── lv_drivers/
+├── libhv/
+├── spdlog/
+├── wpa_supplicant/
+└── ...
+```
+
+The exact repository structure may change as development progresses.
+
+Submodules should be initialized after cloning when required by the project.
+
+For example:
+
+```bash
+git submodule update --init --recursive
+```
+
+---
+
+# Known Reference Files and Binaries
+
+The repository may contain binaries or other files retained from development and testing.
+
+A binary stored in the repository should not automatically be considered a universal working binary for every supported printer.
+
+A binary may depend on:
+
+* a specific architecture
+* ABI
+* libc
+* loader
+* firmware version
+* framebuffer configuration
+* touchscreen configuration
+* library versions
+
+Reference binaries should therefore be treated as development artifacts unless their compatibility has been explicitly verified.
+
+---
+
+# Printer-Specific Development
+
+Hardware-specific changes should remain isolated where practical.
+
+For example, if one printer requires:
+
+```text
+/dev/fb1
+```
+
+while another uses:
+
+```text
+/dev/fb0
+```
+
+the project should not blindly change the global default for every printer.
+
+Likewise, if one printer uses:
+
+```text
+/dev/input/event1
+```
+
+that does not mean every printer should use the same device.
+
+Printer-specific configuration should eventually be documented clearly so that developers can reproduce the configuration without accidentally affecting other platforms.
+
+---
+
+# Adding Support for a New Printer
+
+When investigating a new printer, collect as much information as possible before modifying the source.
+
+A useful starting checklist is:
+
+### Hardware
+
+* Printer model
+* Hardware revision
+* SoC
+* CPU architecture
+* CPU instruction set
+* Endianness
+* RAM
+* Storage
+* Display
+* Touchscreen
+
+### Linux
+
+* Kernel version
+* `uname -m`
+* `/proc/cpuinfo`
+* device nodes
+* framebuffer devices
+* input devices
+
+### Display
+
+* framebuffer number
+* visible resolution
+* virtual resolution
+* bits per pixel
+* stride
+* framebuffer mode
+* framebuffer panning behavior
+
+### Touch
+
+* event device
+* device name
+* axis ranges
+* input capabilities
+
+### Executables
+
+* `file`
+* `readelf -h`
+* `readelf -l`
+* `readelf -d`
+* dependencies
+* interpreter
+* libraries
+
+### Firmware
+
+* firmware version
+* GUI binaries
+* display services
+* configuration files
+* relevant system libraries
+
+### Testing
+
+* stock display behavior
+* GuppyScreen startup behavior
+* rendering
+* touchscreen input
+* sleep
+* wake
+* application switching
+* stability
+
+---
+
+# Printer Development Records
+
+Each printer should eventually have a documented development record.
+
+A development record should include:
+
+```text
+Printer:
+Hardware revision:
+Firmware:
+SoC:
+CPU architecture:
+Endianness:
+ABI:
+Kernel:
+Framebuffer:
+Touchscreen:
+Toolchain:
+Build configuration:
+Known working binary:
+Known issues:
+Test results:
+```
+
+This makes it possible for other developers to reproduce the work.
+
+---
+
+# Current Research Platform
+
+One of the current research platforms for this project is the **Creality K1C 2025/2026**.
+
+The K1C research environment is being used to investigate several areas, including:
+
+* Ingenic X2600 / XBurst II hardware
+* target executable compatibility
+* MIPS executable formats
+* ABI compatibility
+* dynamic loader compatibility
+* framebuffer behavior
+* virtual framebuffer behavior
+* framebuffer panning
+* touchscreen input
+* display sleep and wake behavior
+* stock display and GUI services
+* firmware differences
+* LVGL integration
+
+The K1C is a current research platform, not the definition of the entire project.
+
+Findings from the K1C should only be generalized to other printers when the relevant hardware and software characteristics have been verified.
+
+---
+
+# Other Creality Printers
+
+The same research process can be used for other Creality printers.
+
+Potential future development may include printers such as:
+
+* K1
+* K1 Max
+* K1C
+* K2
+* K3
+* other current or future Creality platforms
+
+These names represent possible development targets and research platforms.
+
+They do **not** automatically indicate that the printer is supported.
+
+Support should only be claimed after the required hardware, software, and runtime behavior have been verified.
+
+---
+
+# Git Workflow
+
+Changes should be committed in logical steps.
+
+Before committing:
+
+```bash
+git status
+```
+
+Review changes with:
+
+```bash
+git diff
+```
+
+After committing:
+
+```bash
+git log -1 --oneline
+```
+
+Push changes with:
+
+```bash
+git push
+```
+
+Keep commits focused where possible.
+
+For example:
+
+```text
+Add framebuffer investigation notes
+```
+
+is preferable to combining unrelated framebuffer, touchscreen, toolchain, and documentation changes into one unexplained commit.
+
+---
+
+# Contributions
 
 Contributions are welcome.
 
 Useful contributions include:
 
-- new printer support;
-- display driver improvements;
-- framebuffer fixes;
-- touchscreen fixes;
-- LVGL compatibility work;
-- UI improvements;
-- performance improvements;
-- diagnostic tools;
-- documentation;
-- build improvements;
-- reproducible bug reports;
-- hardware research.
+* hardware research
+* firmware comparisons
+* build fixes
+* toolchain information
+* framebuffer research
+* touchscreen research
+* compatibility testing
+* documentation
+* reproducible test results
+* printer-specific configuration
+* debugging information
 
-When contributing printer-specific work, clearly identify the printer model and firmware version involved.
-
----
-
-## Pull Requests
-
-A good pull request should explain:
-
-### What changed?
-
-Describe the actual change.
-
-### Why was it necessary?
-
-Explain the problem it solves.
-
-### Which printer(s) does it affect?
-
-Be explicit.
-
-### Which firmware versions were tested?
-
-Include them when known.
-
-### How was it tested?
-
-Describe the tests that were actually performed.
-
-For example:
-
-- Build: Pass
-- Application startup: Pass
-- Display: Pass
-- Touch: Pass
-- Reboot: Pass
-- Sleep/wake: Pass
-- Long-running test: Pass
-
-If something was not tested, say so.
-
-Do not claim compatibility that has not been tested.
+When reporting a result, include enough information for another developer to understand how the result was obtained.
 
 ---
 
-## Reporting Problems
+# Pull Requests
 
-When reporting a problem, provide as much useful information as possible.
+A useful pull request should explain:
 
-At minimum, provide:
+* what was changed
+* why it was changed
+* which printer was tested
+* firmware version
+* hardware revision if known
+* build environment
+* toolchain
+* test procedure
+* test result
+* known limitations
 
-- Printer model;
-- firmware version;
-- SoC;
-- architecture;
-- GuppyScreen version or commit;
-- LVGL version;
-- framebuffer;
-- touch device;
-- problem description;
-- expected behavior;
-- actual behavior;
-- steps to reproduce.
-
-Where possible, also include relevant diagnostics.
-
-A photo or video can be extremely useful for display problems.
-
-For framebuffer problems, include relevant framebuffer information.
-
-For touchscreen problems, include the input-device information.
+Avoid presenting an unverified printer-specific assumption as a universal fix.
 
 ---
 
-## Production Releases
+# Problem Reports
 
-This repository is intended for development.
+When reporting a problem, include as much diagnostic information as possible.
 
-Once support for a specific printer is considered stable, it can be packaged separately for end users.
+Useful information may include:
 
-A production repository or release should:
+```bash
+uname -a
+uname -m
+cat /proc/cpuinfo
+```
 
-- target a clearly defined printer;
-- document supported firmware;
-- provide a tested installation method;
-- provide rollback and recovery;
-- avoid exposing unnecessary development files;
-- avoid shipping development-only tools;
-- clearly state hardware compatibility.
+and:
 
-The development repository should remain the place where experimental and cross-printer development takes place.
+```bash
+ls -l /dev/fb*
+ls -l /dev/input/
+```
 
----
+For executables:
 
-## Relationship to Printer-Specific Repositories
+```bash
+file <binary>
+readelf -h <binary>
+readelf -l <binary>
+```
 
-Printer-specific production repositories should remain separate from this development repository.
+Also include:
 
-The intended relationship is:
-
-    GuppyScreen-Creality-Development
-        |
-        +-- research
-        +-- development
-        +-- experiments
-        +-- patches
-        +-- cross-printer support
-                |
-                +-- K1C
-                +-- K1 Max
-                +-- K2
-                +-- K3
-                +-- other printers
-
-A printer-specific production repository can then contain only the files required to safely install and run the tested release for that printer.
-
-This separation helps prevent experimental development changes from accidentally becoming production installation changes.
+* printer model
+* firmware version
+* hardware revision if known
+* exact binary tested
+* exact command used
+* console output
+* whether the stock GUI still works
+* whether the display freezes
+* whether touchscreen input still works
+* whether rebooting restores the original behavior
 
 ---
 
-## Project Status
+# Evidence First
 
-This repository is an active development environment.
+When something does not work, avoid immediately changing multiple parts of the project.
 
-Support for individual printers should be considered experimental until that printer has been properly investigated and tested.
+For example, if GuppyScreen freezes on a printer:
 
-The fact that GuppyScreen works on one Creality printer does **not** mean that it works on all Creality printers.
+Do not immediately assume:
 
-Hardware support should be added incrementally and documented clearly.
+```text
+LVGL is broken
+```
+
+or:
+
+```text
+the framebuffer is wrong
+```
+
+or:
+
+```text
+the touchscreen is wrong
+```
+
+Instead, investigate each layer.
+
+A useful debugging order is:
+
+```text
+1. Is the executable compatible?
+2. Does the executable start?
+3. Is the dynamic loader correct?
+4. Are required libraries available?
+5. Is the framebuffer correct?
+6. Can the framebuffer be written?
+7. Is the framebuffer layout correct?
+8. Does framebuffer panning work?
+9. Is touchscreen input available?
+10. Does LVGL initialize correctly?
+11. Does rendering work?
+12. Does the system remain stable?
+13. What happens after sleep/wake?
+```
+
+This makes debugging much easier to reproduce.
+
+---
+
+# Recommended Development Process
+
+For a new printer:
+
+```text
+1. Identify the hardware
+        ↓
+2. Identify the firmware
+        ↓
+3. Inspect Linux
+        ↓
+4. Identify CPU architecture
+        ↓
+5. Identify ABI and endianness
+        ↓
+6. Inspect stock executables
+        ↓
+7. Identify the dynamic loader
+        ↓
+8. Identify framebuffer devices
+        ↓
+9. Identify touchscreen devices
+        ↓
+10. Build a minimal target test
+        ↓
+11. Verify the toolchain
+        ↓
+12. Build GuppyScreen
+        ↓
+13. Test on the printer
+        ↓
+14. Document the result
+        ↓
+15. Make printer-specific changes
+        ↓
+16. Repeat testing
+```
+
+This process is intentionally conservative.
+
+It is much easier to debug one verified change than many simultaneous changes.
+
+---
+
+# What This Repository Does Not Assume
+
+This repository does not assume that:
+
+* every Creality printer uses the same CPU
+* every Creality printer uses the same Linux environment
+* every printer uses the same framebuffer
+* every printer uses `/dev/fb0`
+* every printer uses the same touchscreen event device
+* every printer uses the same framebuffer resolution
+* every printer uses the same virtual framebuffer layout
+* every printer uses the same ABI
+* every printer uses the same endianness
+* every printer uses the same dynamic loader
+* every printer uses the same libc
+* every printer uses the same firmware behavior
+* a binary built for one printer will run on another printer
+* a working configuration on one printer is automatically correct for another printer
+
+These assumptions must be verified.
+
+---
+
+# Security and Privacy
+
+When collecting information from a printer, avoid publishing sensitive information unnecessarily.
+
+Do not publish:
+
+* passwords
+* authentication tokens
+* private keys
+* Wi-Fi credentials
+* personal information
+* private network information
+* unique identifiers unless necessary
+* proprietary files that cannot legally be redistributed
+
+When sharing diagnostic output, review it before publishing.
+
+---
+
+# Development Status
+
+This repository is an active development and research project.
+
+Hardware support should be considered experimental until it has been properly tested.
+
+A successful build does not automatically mean that a printer is supported.
+
+A successful startup does not automatically mean that:
+
+* rendering is correct
+* touchscreen input works
+* framebuffer behavior is correct
+* sleep/wake works
+* the system is stable
+* the configuration is suitable for production use
+
+Support should be based on reproducible testing.
+
+---
+
+# Related Printer-Specific Work
+
+This repository is intended to provide a common development and research environment.
+
+Printer-specific projects or configurations may eventually be maintained separately when appropriate.
+
+The relationship can be thought of as:
+
+```text
+GuppyScreen
+      │
+      ▼
+GuppyScreen Creality Development
+      │
+      ├── Printer research
+      ├── Shared development
+      ├── Toolchain research
+      ├── Hardware investigation
+      └── Testing
+             │
+             ├── Printer-specific configuration
+             ├── Printer-specific patches
+             └── Printer-specific releases
+```
+
+The shared repository should contain reusable knowledge rather than assuming that every printer is identical.
+
+---
+
+# Final Rule
+
+## Measure first. Change second. Document everything.
+
+The most important principle of this project is simple:
+
+**Do not guess when the printer can be inspected.**
+
+If the hardware, firmware, executable format, framebuffer, touchscreen, or system behavior is unknown, investigate it first.
+
+A measured result is more valuable than an assumption, and a documented result can help every developer working on another Creality printer.
 
 ---
 
 ## Credits
 
-This development repository builds on the GuppyScreen project and its open-source ecosystem.
+This project builds upon the work of the original GuppyScreen project and the broader open-source community.
 
-Credit goes to the original GuppyScreen developers and contributors, as well as the developers of the libraries and components used by the project.
-
-Additional credit belongs to community contributors who investigate Creality hardware, test builds, identify hardware differences, and contribute fixes and documentation.
+Please respect the licenses of GuppyScreen, LVGL, its dependencies, and any other third-party software included or used by the project.
 
 ---
 
 ## License
 
-Please refer to the license files and upstream project licensing information included in this repository.
+See the repository and individual project components for their applicable license information.
 
-Individual third-party components may have their own licenses.
-
-When modifying or redistributing components, respect the applicable licenses of:
-
-- GuppyScreen;
-- LVGL;
-- LVGL drivers;
-- libhv;
-- spdlog;
-- wpa_supplicant;
-- other included or linked components.
-
----
-
-## Final Note
-
-The goal of this repository is not simply to make GuppyScreen run on one printer.
-
-The goal is to make it easier for the community to understand how Creality hardware differs between printers, develop the required adaptations, test them properly, and eventually turn successful development work into reliable printer-specific releases.
-
-If you are working on a new Creality printer:
-
-**Investigate first.  
-Document what you find.  
-Build second.  
-Test carefully.  
-Share the results.**
+Third-party components may have separate licenses and requirements.
