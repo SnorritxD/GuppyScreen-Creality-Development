@@ -1,10 +1,17 @@
 <div align="center">
 
-# GuppyScreen Creality Development
+# 🖥️ GuppyScreen Creality Development
+
+<strong>A community development and research repository for adapting, building, testing, and investigating GuppyScreen on Creality 3D printers.</strong>
+
+<br>
+
+<img src="https://img.shields.io/badge/Project-GuppyScreen-blue?style=for-the-badge">
+<img src="https://img.shields.io/badge/Scope-Creality%20Printers-orange?style=for-the-badge">
+<img src="https://img.shields.io/badge/Focus-Development%20%26%20Testing-green?style=for-the-badge">
+<img src="https://img.shields.io/badge/Approach-Evidence%20First-purple?style=for-the-badge">
 
 </div>
-
-**A community development and research repository for adapting, building, testing, and investigating GuppyScreen on Creality 3D printers.**
 
 This repository is intended as a development environment for researching printer-specific hardware, firmware, display systems, touchscreen input, Linux environments, CPU architectures, toolchains, and GuppyScreen compatibility.
 
@@ -49,6 +56,9 @@ The exact build and deployment process may differ between printer models.
 
 ---
 
+
+---
+
 # 📖 Project Purpose
 
 GuppyScreen is an alternative touchscreen interface originally developed for compatible 3D printers.
@@ -79,6 +89,9 @@ Different Creality printers can use significantly different:
 Because of these differences, support for one printer **does not automatically mean support for another printer**.
 
 The purpose of this repository is therefore to document and verify those differences instead of assuming that hardware is compatible.
+
+---
+
 
 ---
 
@@ -123,6 +136,9 @@ Avoid making hardware-specific changes simply because they work on another print
 
 ---
 
+
+---
+
 # 🧱 Current Development Baseline
 
 The current development baseline uses the original GuppyScreen architecture based on:
@@ -141,6 +157,9 @@ Future LVGL upgrades may be investigated separately once the hardware-specific i
 
 ---
 
+
+---
+
 # 💻 Supported Development Platforms
 
 Development can be performed on:
@@ -152,6 +171,9 @@ Development can be performed on:
 The exact commands may differ between operating systems.
 
 Linux is generally the most convenient environment for cross-compilation and embedded Linux development, but the project should not require every contributor to use the same desktop operating system.
+
+---
+
 
 ---
 
@@ -179,6 +201,9 @@ The repository should remain useful even when a particular printer has not yet b
 
 ---
 
+
+---
+
 # 🖨️ Printer Compatibility
 
 Printer compatibility must be determined experimentally.
@@ -194,6 +219,9 @@ A printer should not be considered supported simply because it:
 * uses another printer's GuppyScreen binary successfully
 
 These similarities can be useful clues, but they do not prove binary or hardware compatibility.
+
+---
+
 
 ---
 
@@ -224,6 +252,9 @@ ls /sys/class/input/
 ```
 
 The exact commands available may differ between printer firmware versions.
+
+---
+
 
 ---
 
@@ -269,6 +300,9 @@ For example, a printer may use a MIPS-based CPU, but the exact architecture, end
 
 ---
 
+
+---
+
 # 🛠️ Cross-Compilation
 
 Cross-compilation is required when the development PC and printer use different CPU architectures.
@@ -291,6 +325,9 @@ Important properties include:
 Do not select a toolchain based only on a CPU name.
 
 A compiler that produces a valid ELF executable can still produce a binary that cannot run on the printer.
+
+---
+
 
 ---
 
@@ -346,6 +383,9 @@ A working stock executable can be especially useful as a reference when investig
 
 ---
 
+
+---
+
 # 📚 Dynamic Loader
 
 The target dynamic loader must be investigated before relying on dynamically linked test binaries.
@@ -367,6 +407,9 @@ The ELF `INTERP` entry can identify the loader expected by an executable.
 A binary requiring a loader that does not exist on the printer will not run normally.
 
 Likewise, a binary can fail because its ABI, libraries, or libc version are incompatible even when the CPU architecture appears correct.
+
+---
+
 
 ---
 
@@ -414,6 +457,9 @@ The exact framebuffer number and available sysfs attributes depend on the printe
 
 ---
 
+
+---
+
 # 📐 Visible Resolution vs. Virtual Resolution
 
 A framebuffer's visible display resolution does not necessarily equal its virtual framebuffer size.
@@ -444,6 +490,9 @@ Therefore, both the visible mode and virtual framebuffer dimensions should be in
 
 ---
 
+
+---
+
 # 🔄 Framebuffer Panning
 
 Some target systems use framebuffer panning to switch between framebuffer areas.
@@ -471,6 +520,9 @@ when implementing this behavior.
 The exact behavior must be confirmed on the target printer.
 
 Do not assume that a virtual framebuffer automatically means that panning or double buffering works in the same way on another printer.
+
+---
+
 
 ---
 
@@ -510,6 +562,9 @@ Useful information can include:
 
 ---
 
+
+---
+
 # 🌙 Display Sleep and Wake
 
 Display problems after idle, sleep, wake, or screen-off events must be investigated separately from normal rendering.
@@ -540,6 +595,9 @@ before changing GuppyScreen rendering code.
 
 ---
 
+
+---
+
 # 🧪 Firmware Research
 
 Firmware versions can change system behavior even when the printer hardware remains physically identical.
@@ -564,6 +622,9 @@ Do not assume that behavior observed on one firmware version applies to another.
 
 ---
 
+
+---
+
 # 🏭 Stock Creality Software
 
 Stock Creality software can provide valuable information about how the printer's display system works.
@@ -584,6 +645,9 @@ Existing binaries can be inspected to determine how the stock system interacts w
 However, stock system files should **not** be modified blindly.
 
 Always preserve original files and have a recovery procedure before testing changes on the printer.
+
+---
+
 
 ---
 
@@ -612,6 +676,9 @@ Never assume that a binary is safe simply because it compiled successfully.
 
 ---
 
+
+---
+
 # 🧑‍💻 Local Development
 
 Whenever possible, development should first be performed on the development PC.
@@ -630,6 +697,9 @@ Useful development approaches include:
 Hardware-specific behavior must eventually be tested on the actual target printer.
 
 A PC build that works correctly does not prove that the target binary will work on the printer.
+
+---
+
 
 ---
 
@@ -655,6 +725,9 @@ Important build information includes:
 * firmware version
 
 This information should be recorded when a working target build is discovered.
+
+---
+
 
 ---
 
@@ -690,6 +763,9 @@ git submodule update --init --recursive
 
 ---
 
+
+---
+
 # 📁 Known Reference Files and Binaries
 
 The repository may contain binaries or other files retained from development and testing.
@@ -708,6 +784,9 @@ A binary may depend on:
 * library versions
 
 Reference binaries should therefore be treated as development artifacts unless their compatibility has been explicitly verified.
+
+---
+
 
 ---
 
@@ -738,6 +817,9 @@ Likewise, if one printer uses:
 that does not mean every printer should use the same device.
 
 Printer-specific configuration should eventually be documented clearly so that developers can reproduce the configuration without accidentally affecting other platforms.
+
+---
+
 
 ---
 
@@ -817,6 +899,9 @@ A useful starting checklist is:
 
 ---
 
+
+---
+
 # 📝 Printer Development Records
 
 Each printer should eventually have a documented development record.
@@ -842,6 +927,9 @@ Test results:
 ```
 
 This makes it possible for other developers to reproduce the work.
+
+---
+
 
 ---
 
@@ -871,6 +959,9 @@ Findings from the K1C should only be generalized to other printers when the rele
 
 ---
 
+
+---
+
 # 🖨️ Other Creality Printers
 
 The same research process can be used for other Creality printers.
@@ -889,6 +980,9 @@ These names represent possible development targets and research platforms.
 They do **not** automatically indicate that the printer is supported.
 
 Support should only be claimed after the required hardware, software, and runtime behavior have been verified.
+
+---
+
 
 ---
 
@@ -932,6 +1026,9 @@ is preferable to combining unrelated framebuffer, touchscreen, toolchain, and do
 
 ---
 
+
+---
+
 # 🤝 Contributions
 
 Contributions are welcome.
@@ -954,6 +1051,9 @@ When reporting a result, include enough information for another developer to und
 
 ---
 
+
+---
+
 # 📬 Pull Requests
 
 A useful pull request should explain:
@@ -970,6 +1070,9 @@ A useful pull request should explain:
 * known limitations
 
 Avoid presenting an unverified printer-specific assumption as a universal fix.
+
+---
+
 
 ---
 
@@ -1012,6 +1115,9 @@ Also include:
 * whether the display freezes
 * whether touchscreen input still works
 * whether rebooting restores the original behavior
+
+---
+
 
 ---
 
@@ -1063,6 +1169,9 @@ This makes debugging much easier to reproduce.
 
 ---
 
+
+---
+
 # 🪜 Recommended Development Process
 
 For a new printer:
@@ -1107,6 +1216,9 @@ It is much easier to debug one verified change than many simultaneous changes.
 
 ---
 
+
+---
+
 # 🚫 What This Repository Does Not Assume
 
 This repository does not assume that:
@@ -1130,6 +1242,9 @@ These assumptions must be verified.
 
 ---
 
+
+---
+
 # 🔒 Security and Privacy
 
 When collecting information from a printer, avoid publishing sensitive information unnecessarily.
@@ -1146,6 +1261,9 @@ Do not publish:
 * proprietary files that cannot legally be redistributed
 
 When sharing diagnostic output, review it before publishing.
+
+---
+
 
 ---
 
@@ -1167,6 +1285,9 @@ A successful startup does not automatically mean that:
 * the configuration is suitable for production use
 
 Support should be based on reproducible testing.
+
+---
+
 
 ---
 
@@ -1196,6 +1317,9 @@ GuppyScreen Creality Development
 ```
 
 The shared repository should contain reusable knowledge rather than assuming that every printer is identical.
+
+---
+
 
 ---
 
