@@ -6,14 +6,15 @@
 
 <br>
 
+This repository is intended as a development environment for researching printer-specific hardware, firmware, display systems, touchscreen input, Linux environments, CPU architectures, toolchains, and GuppyScreen compatibility.
+
+<br>
+
 <img src="https://img.shields.io/badge/Project-GuppyScreen-blue?style=for-the-badge">
 <img src="https://img.shields.io/badge/Scope-Creality%20Printers-orange?style=for-the-badge">
 <img src="https://img.shields.io/badge/Focus-Development%20%26%20Testing-green?style=for-the-badge">
 <img src="https://img.shields.io/badge/Approach-Evidence%20First-purple?style=for-the-badge">
 
-<br>
-
-This repository is intended as a development environment for researching printer-specific hardware, firmware, display systems, touchscreen input, Linux environments, CPU architectures, toolchains, and GuppyScreen compatibility.
 
 It is **not limited to one printer model**.
 
