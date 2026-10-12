@@ -1,6 +1,10 @@
+<div align="center">
+
 # GuppyScreen Creality Development
 
-A community development and research repository for adapting, building, testing, and investigating **GuppyScreen** on Creality 3D printers.
+</div>
+
+**A community development and research repository for adapting, building, testing, and investigating GuppyScreen on Creality 3D printers.**
 
 This repository is intended as a development environment for researching printer-specific hardware, firmware, display systems, touchscreen input, Linux environments, CPU architectures, toolchains, and GuppyScreen compatibility.
 
@@ -8,7 +12,7 @@ It is **not limited to one printer model**.
 
 ---
 
-## Important: Development PC vs. Printer
+## ⚠️ Important: Development PC vs. Printer
 
 This repository is developed on a **development PC**.
 
@@ -45,7 +49,7 @@ The exact build and deployment process may differ between printer models.
 
 ---
 
-# Project Purpose
+# 📖 Project Purpose
 
 GuppyScreen is an alternative touchscreen interface originally developed for compatible 3D printers.
 
@@ -78,7 +82,7 @@ The purpose of this repository is therefore to document and verify those differe
 
 ---
 
-# Project Philosophy
+# 🧭 Project Philosophy
 
 The project follows an **evidence-first development approach**.
 
@@ -119,7 +123,7 @@ Avoid making hardware-specific changes simply because they work on another print
 
 ---
 
-# Current Development Baseline
+# 🧱 Current Development Baseline
 
 The current development baseline uses the original GuppyScreen architecture based on:
 
@@ -137,7 +141,7 @@ Future LVGL upgrades may be investigated separately once the hardware-specific i
 
 ---
 
-# Supported Development Platforms
+# 💻 Supported Development Platforms
 
 Development can be performed on:
 
@@ -151,7 +155,7 @@ Linux is generally the most convenient environment for cross-compilation and emb
 
 ---
 
-# Repository Scope
+# 📦 Repository Scope
 
 This repository is intended to support work such as:
 
@@ -175,7 +179,7 @@ The repository should remain useful even when a particular printer has not yet b
 
 ---
 
-# Printer Compatibility
+# 🖨️ Printer Compatibility
 
 Printer compatibility must be determined experimentally.
 
@@ -193,7 +197,7 @@ These similarities can be useful clues, but they do not prove binary or hardware
 
 ---
 
-# Hardware Investigation
+# 🔬 Hardware Investigation
 
 Before modifying GuppyScreen for a new printer, investigate the target hardware.
 
@@ -223,7 +227,7 @@ The exact commands available may differ between printer firmware versions.
 
 ---
 
-# CPU Architecture
+# ⚙️ CPU Architecture
 
 The target CPU architecture must be determined from the printer itself.
 
@@ -265,7 +269,7 @@ For example, a printer may use a MIPS-based CPU, but the exact architecture, end
 
 ---
 
-# Cross-Compilation
+# 🛠️ Cross-Compilation
 
 Cross-compilation is required when the development PC and printer use different CPU architectures.
 
@@ -290,7 +294,7 @@ A compiler that produces a valid ELF executable can still produce a binary that 
 
 ---
 
-# Target Executable Investigation
+# 🔎 Target Executable Investigation
 
 Existing printer binaries are valuable sources of information.
 
@@ -342,7 +346,7 @@ A working stock executable can be especially useful as a reference when investig
 
 ---
 
-# Dynamic Loader
+# 📚 Dynamic Loader
 
 The target dynamic loader must be investigated before relying on dynamically linked test binaries.
 
@@ -366,7 +370,7 @@ Likewise, a binary can fail because its ABI, libraries, or libc version are inco
 
 ---
 
-# Framebuffer Investigation
+# 🖥️ Framebuffer Investigation
 
 GuppyScreen communicates with the display through the Linux graphics system used by the target printer.
 
@@ -410,7 +414,7 @@ The exact framebuffer number and available sysfs attributes depend on the printe
 
 ---
 
-# Visible Resolution vs. Virtual Resolution
+# 📐 Visible Resolution vs. Virtual Resolution
 
 A framebuffer's visible display resolution does not necessarily equal its virtual framebuffer size.
 
@@ -440,7 +444,7 @@ Therefore, both the visible mode and virtual framebuffer dimensions should be in
 
 ---
 
-# Framebuffer Panning
+# 🔄 Framebuffer Panning
 
 Some target systems use framebuffer panning to switch between framebuffer areas.
 
@@ -470,7 +474,7 @@ Do not assume that a virtual framebuffer automatically means that panning or dou
 
 ---
 
-# Touchscreen Investigation
+# 👆 Touchscreen Investigation
 
 The touchscreen input device must also be determined from the target printer.
 
@@ -506,7 +510,7 @@ Useful information can include:
 
 ---
 
-# Display Sleep and Wake
+# 🌙 Display Sleep and Wake
 
 Display problems after idle, sleep, wake, or screen-off events must be investigated separately from normal rendering.
 
@@ -536,7 +540,7 @@ before changing GuppyScreen rendering code.
 
 ---
 
-# Firmware Research
+# 🧪 Firmware Research
 
 Firmware versions can change system behavior even when the printer hardware remains physically identical.
 
@@ -560,7 +564,7 @@ Do not assume that behavior observed on one firmware version applies to another.
 
 ---
 
-# Stock Creality Software
+# 🏭 Stock Creality Software
 
 Stock Creality software can provide valuable information about how the printer's display system works.
 
@@ -583,7 +587,7 @@ Always preserve original files and have a recovery procedure before testing chan
 
 ---
 
-# Safety and Recovery
+# 🛡️ Safety and Recovery
 
 Testing software directly on an embedded printer can cause:
 
@@ -608,7 +612,7 @@ Never assume that a binary is safe simply because it compiled successfully.
 
 ---
 
-# Local Development
+# 🧑‍💻 Local Development
 
 Whenever possible, development should first be performed on the development PC.
 
@@ -629,7 +633,7 @@ A PC build that works correctly does not prove that the target binary will work 
 
 ---
 
-# Build Environment
+# 🔧 Build Environment
 
 The project may require additional libraries and tools depending on the selected build configuration.
 
@@ -654,7 +658,7 @@ This information should be recorded when a working target build is discovered.
 
 ---
 
-# Repository Structure
+# 🗂️ Repository Structure
 
 The repository contains the GuppyScreen source and supporting development material.
 
@@ -686,7 +690,7 @@ git submodule update --init --recursive
 
 ---
 
-# Known Reference Files and Binaries
+# 📁 Known Reference Files and Binaries
 
 The repository may contain binaries or other files retained from development and testing.
 
@@ -707,7 +711,7 @@ Reference binaries should therefore be treated as development artifacts unless t
 
 ---
 
-# Printer-Specific Development
+# 🧩 Printer-Specific Development
 
 Hardware-specific changes should remain isolated where practical.
 
@@ -737,7 +741,7 @@ Printer-specific configuration should eventually be documented clearly so that d
 
 ---
 
-# Adding Support for a New Printer
+# ➕ Adding Support for a New Printer
 
 When investigating a new printer, collect as much information as possible before modifying the source.
 
@@ -813,7 +817,7 @@ A useful starting checklist is:
 
 ---
 
-# Printer Development Records
+# 📝 Printer Development Records
 
 Each printer should eventually have a documented development record.
 
@@ -841,7 +845,7 @@ This makes it possible for other developers to reproduce the work.
 
 ---
 
-# Current Research Platform
+# 🔍 Current Research Platform
 
 One of the current research platforms for this project is the **Creality K1C 2025/2026**.
 
@@ -867,7 +871,7 @@ Findings from the K1C should only be generalized to other printers when the rele
 
 ---
 
-# Other Creality Printers
+# 🖨️ Other Creality Printers
 
 The same research process can be used for other Creality printers.
 
@@ -888,7 +892,7 @@ Support should only be claimed after the required hardware, software, and runtim
 
 ---
 
-# Git Workflow
+# 🌿 Git Workflow
 
 Changes should be committed in logical steps.
 
@@ -928,7 +932,7 @@ is preferable to combining unrelated framebuffer, touchscreen, toolchain, and do
 
 ---
 
-# Contributions
+# 🤝 Contributions
 
 Contributions are welcome.
 
@@ -950,7 +954,7 @@ When reporting a result, include enough information for another developer to und
 
 ---
 
-# Pull Requests
+# 📬 Pull Requests
 
 A useful pull request should explain:
 
@@ -969,7 +973,7 @@ Avoid presenting an unverified printer-specific assumption as a universal fix.
 
 ---
 
-# Problem Reports
+# 🧰 Problem Reports
 
 When reporting a problem, include as much diagnostic information as possible.
 
@@ -1011,7 +1015,7 @@ Also include:
 
 ---
 
-# Evidence First
+# 🔬 Evidence First
 
 When something does not work, avoid immediately changing multiple parts of the project.
 
@@ -1059,7 +1063,7 @@ This makes debugging much easier to reproduce.
 
 ---
 
-# Recommended Development Process
+# 🪜 Recommended Development Process
 
 For a new printer:
 
@@ -1103,7 +1107,7 @@ It is much easier to debug one verified change than many simultaneous changes.
 
 ---
 
-# What This Repository Does Not Assume
+# 🚫 What This Repository Does Not Assume
 
 This repository does not assume that:
 
@@ -1126,7 +1130,7 @@ These assumptions must be verified.
 
 ---
 
-# Security and Privacy
+# 🔒 Security and Privacy
 
 When collecting information from a printer, avoid publishing sensitive information unnecessarily.
 
@@ -1145,7 +1149,7 @@ When sharing diagnostic output, review it before publishing.
 
 ---
 
-# Development Status
+# 📊 Development Status
 
 This repository is an active development and research project.
 
@@ -1166,7 +1170,7 @@ Support should be based on reproducible testing.
 
 ---
 
-# Related Printer-Specific Work
+# 🔗 Related Printer-Specific Work
 
 This repository is intended to provide a common development and research environment.
 
@@ -1195,7 +1199,7 @@ The shared repository should contain reusable knowledge rather than assuming tha
 
 ---
 
-# Final Rule
+# 🎯 Final Rule
 
 ## Measure first. Change second. Document everything.
 
@@ -1209,7 +1213,7 @@ A measured result is more valuable than an assumption, and a documented result c
 
 ---
 
-## Credits
+## 🙏 Credits
 
 This project builds upon the work of the original GuppyScreen project and the broader open-source community.
 
@@ -1217,7 +1221,7 @@ Please respect the licenses of GuppyScreen, LVGL, its dependencies, and any othe
 
 ---
 
-## License
+## 📄 License
 
 See the repository and individual project components for their applicable license information.
 
